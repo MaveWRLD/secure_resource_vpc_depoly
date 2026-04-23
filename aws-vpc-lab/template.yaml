@@ -366,7 +366,7 @@ Resources:
             -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
           AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
             http://169.254.169.254/latest/meta-data/placement/availability-zone)
-          cat > /var/www/html/index.html << 'EOF'
+          cat > /var/www/html/index.html << EOF
           <!DOCTYPE html>
           <html>
             <head>
@@ -414,7 +414,7 @@ Resources:
             -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
           AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
             http://169.254.169.254/latest/meta-data/placement/availability-zone)
-          cat > /var/www/html/index.html << 'EOF'
+          cat > /var/www/html/index.html << EOF
           <!DOCTYPE html>
           <html>
             <head>

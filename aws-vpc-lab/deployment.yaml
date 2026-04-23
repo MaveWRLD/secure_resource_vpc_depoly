@@ -1,4 +1,3 @@
-template-file-path: template.yaml
+template-file-path: aws-vpc-lab/template.yaml
 parameters: {}
-tags:
-  Project: aws-vpc-lab
+tags: {}

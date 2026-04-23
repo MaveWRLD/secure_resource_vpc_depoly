@@ -250,6 +250,224 @@ Resources:
       RouteTableId: !Ref PrivateRouteTableB
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGatewayB
+      
+  # ---------------------------------------------------------
+  # SECTION 8 — IAM ROLE AND INSTANCE PROFILE
+  # grants EC2 instances permission to register with SSM
+  # all four instances share this single profile
+  # no SSH keys, no bastion — SSM is the only access method
+  # ---------------------------------------------------------
+  SSMInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: lab-ssm-instance-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Tags:
+        - Key: Name
+          Value: lab-ssm-instance-role
+
+  SSMInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: lab-ssm-instance-profile
+      Roles:
+        - !Ref SSMInstanceRole
+
+  # ---------------------------------------------------------
+  # SECTION 9 — SECURITY GROUPS
+  # follows least-privilege — only required ports open
+  # NO port 22 anywhere in this template
+  # ---------------------------------------------------------
+
+  # Web tier SG — public EC2 instances
+  # allows HTTP from internet and ICMP for ping validation
+  WebTierSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: lab-web-tier-sg
+      GroupDescription: Web tier - HTTP and ICMP only
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - Description: HTTP from internet
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - Description: ICMP ping from internet
+          IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - Description: All outbound traffic
+          IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: lab-web-tier-sg
+
+  # App tier SG — private EC2 instances
+  # allows ICMP from within VPC only for ping validation
+  # no inbound HTTP, no inbound SSH
+  AppTierSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: lab-app-tier-sg
+      GroupDescription: App tier - ICMP from VPC only
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - Description: ICMP ping from within VPC only
+          IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+          CidrIp: !Ref VpcCIDR
+      SecurityGroupEgress:
+        - Description: All outbound traffic
+          IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: lab-app-tier-sg
+
+  # ---------------------------------------------------------
+  # SECTION 10 — EC2 INSTANCES
+  # Amazon Linux 2023 AMI (SSM agent pre-installed)
+  # public instances run Apache via UserData
+  # private instances have no public IP
+  # all four use SSMInstanceProfile — no key pairs needed
+  # ---------------------------------------------------------
+
+  # --- Web Tier — AZ-A ---
+  WebServerA:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+      SubnetId: !Ref PublicSubnetA
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      SecurityGroupIds:
+        - !Ref WebTierSG
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
+            -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+          AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
+            http://169.254.169.254/latest/meta-data/placement/availability-zone)
+          cat > /var/www/html/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>AWS VPC Lab</title>
+              <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin-top: 80px; background: #f4f4f4; }
+                .card { display: inline-block; padding: 40px 60px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+                h1 { color: #232f3e; }
+                p  { color: #555; font-size: 18px; }
+                .az { color: #ff9900; font-weight: bold; font-size: 20px; }
+              </style>
+            </head>
+            <body>
+              <div class="card">
+                <h1>AWS VPC Lab</h1>
+                <p>Student Name: Jacob Quaye</p>
+                <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
+                <p class="az">Availability Zone: $AZ</p>
+              </div>
+            </body>
+          </html>
+          EOF
+      Tags:
+        - Key: Name
+          Value: web-server-a
+
+  # --- Web Tier — AZ-B ---
+  WebServerB:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+      SubnetId: !Ref PublicSubnetB
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      SecurityGroupIds:
+        - !Ref WebTierSG
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
+            -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+          AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
+            http://169.254.169.254/latest/meta-data/placement/availability-zone)
+          cat > /var/www/html/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>AWS VPC Lab</title>
+              <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin-top: 80px; background: #f4f4f4; }
+                .card { display: inline-block; padding: 40px 60px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+                h1 { color: #232f3e; }
+                p  { color: #555; font-size: 18px; }
+                .az { color: #ff9900; font-weight: bold; font-size: 20px; }
+              </style>
+            </head>
+            <body>
+              <div class="card">
+                <h1>AWS VPC Lab</h1>
+                <p>Full Name: Jacob Quaye</p>
+                <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
+                <p class="az">Availability Zone: $AZ</p>
+              </div>
+            </body>
+          </html>
+          EOF
+      Tags:
+        - Key: Name
+          Value: web-server-b
+
+  # --- App Tier — AZ-A ---
+  AppServerA:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+      SubnetId: !Ref PrivateSubnetA
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      SecurityGroupIds:
+        - !Ref AppTierSG
+      Tags:
+        - Key: Name
+          Value: app-server-a
+
+  # --- App Tier — AZ-B ---
+  AppServerB:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+      SubnetId: !Ref PrivateSubnetB
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      SecurityGroupIds:
+        - !Ref AppTierSG
+      Tags:
+        - Key: Name
+          Value: app-server-b
 
 # =========================================================
 # OUTPUTS
@@ -309,6 +527,30 @@ Outputs:
     Value: !Ref EIPB
     Export:
       Name: lab-eip-b
+
+  WebServerAPublicIP:
+    Description: Web Server A public IP
+    Value: !GetAtt WebServerA.PublicIp
+    Export:
+      Name: lab-web-server-a-ip
+
+  WebServerBPublicIP:
+    Description: Web Server B public IP
+    Value: !GetAtt WebServerB.PublicIp
+    Export:
+      Name: lab-web-server-b-ip
+
+  AppServerAPrivateIP:
+    Description: App Server A private IP
+    Value: !GetAtt AppServerA.PrivateIp
+    Export:
+      Name: lab-app-server-a-ip
+
+  AppServerBPrivateIP:
+    Description: App Server B private IP
+    Value: !GetAtt AppServerB.PrivateIp
+    Export:
+      Name: lab-app-server-b-ip
       
 Metadata:
   AWS::Composer::Groups:

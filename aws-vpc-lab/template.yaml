@@ -360,13 +360,11 @@ Resources:
           #!/bin/bash
           yum update -y
           yum install -y httpd
-          systemctl start httpd
-          systemctl enable httpd
           TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
             -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
           AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
             http://169.254.169.254/latest/meta-data/placement/availability-zone)
-          cat > /var/www/html/index.html << EOF
+          cat > /var/www/html/index.html << 'HTML'
           <!DOCTYPE html>
           <html>
             <head>
@@ -384,11 +382,14 @@ Resources:
                 <h1>AWS VPC Lab</h1>
                 <p>Student Name: Jacob Quaye</p>
                 <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
-                <p class="az">Availability Zone: $AZ</p>
+                <p class="az">Availability Zone: __AZ__</p>
               </div>
             </body>
           </html>
-          EOF
+          HTML
+          sed -i "s/__AZ__/$AZ/" /var/www/html/index.html
+          systemctl enable httpd
+          systemctl start httpd
       Tags:
         - Key: Name
           Value: web-server-a
@@ -408,13 +409,11 @@ Resources:
           #!/bin/bash
           yum update -y
           yum install -y httpd
-          systemctl start httpd
-          systemctl enable httpd
           TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
             -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
           AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
             http://169.254.169.254/latest/meta-data/placement/availability-zone)
-          cat > /var/www/html/index.html << EOF
+          cat > /var/www/html/index.html << 'HTML'
           <!DOCTYPE html>
           <html>
             <head>
@@ -432,11 +431,14 @@ Resources:
                 <h1>AWS VPC Lab</h1>
                 <p>Full Name: Jacob Quaye</p>
                 <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
-                <p class="az">Availability Zone: $AZ</p>
+                <p class="az">Availability Zone: __AZ__</p>
               </div>
             </body>
           </html>
-          EOF
+          HTML
+          sed -i "s/__AZ__/$AZ/" /var/www/html/index.html
+          systemctl enable httpd
+          systemctl start httpd
       Tags:
         - Key: Name
           Value: web-server-b

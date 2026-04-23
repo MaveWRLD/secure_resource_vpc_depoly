@@ -1,9 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: >
-  Highly Available Multi-AZ VPC Lab -
-  Two public subnets with Apache web tier,
-  Two private subnets with app tier,
-  SSM Session Manager access only.
+Description: |
+  Highly Available Multi-AZ VPC Lab - Two public subnets with Apache web tier, Two private subnets with app tier, SSM Session Manager access only.
 
 # =========================================================
 # PARAMETERS
@@ -78,7 +75,9 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref PublicSubnetACIDR
-      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -89,7 +88,9 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref PublicSubnetBCIDR
-      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -100,7 +101,9 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref PrivateSubnetACIDR
-      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
@@ -111,7 +114,9 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref PrivateSubnetBCIDR
-      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
@@ -179,6 +184,73 @@ Resources:
       SubnetId: !Ref PrivateSubnetB
       RouteTableId: !Ref PrivateRouteTableB
 
+# ---------------------------------------------------------
+  # SECTION 5 — ELASTIC IPs FOR NAT GATEWAYS
+  # one EIP per NAT Gateway — required before NAT GW creation
+  # ---------------------------------------------------------
+  EIPA:
+    Type: AWS::EC2::EIP
+    DependsOn: AttachIGW
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: lab-eip-nat-a
+
+  EIPB:
+    Type: AWS::EC2::EIP
+    DependsOn: AttachIGW
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: lab-eip-nat-b
+
+  # ---------------------------------------------------------
+  # SECTION 6 — NAT GATEWAYS
+  # one per AZ, each in its own PUBLIC subnet
+  # private subnets route outbound traffic through their
+  # local NAT only — no cross-AZ dependency
+  # ---------------------------------------------------------
+  NatGatewayA:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt EIPA.AllocationId
+      SubnetId: !Ref PublicSubnetA
+      Tags:
+        - Key: Name
+          Value: lab-nat-gw-a
+
+  NatGatewayB:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt EIPB.AllocationId
+      SubnetId: !Ref PublicSubnetB
+      Tags:
+        - Key: Name
+          Value: lab-nat-gw-b
+
+  # ---------------------------------------------------------
+  # SECTION 7 — PRIVATE ROUTES
+  # each private route table points ONLY to its AZ-local NAT
+  # AZ-A private subnet → NatGatewayA (never NatGatewayB)
+  # AZ-B private subnet → NatGatewayB (never NatGatewayA)
+  # this is what satisfies "no cross-AZ NAT dependency"
+  # ---------------------------------------------------------
+  PrivateRouteA:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableA
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayA
+
+  PrivateRouteB:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableB
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayB
+
 # =========================================================
 # OUTPUTS
 # =========================================================
@@ -213,3 +285,35 @@ Outputs:
     Value: !Ref PrivateSubnetB
     Export:
       Name: lab-private-subnet-b-id
+
+  NatGatewayAId:
+    Description: NAT Gateway A ID
+    Value: !Ref NatGatewayA
+    Export:
+      Name: lab-nat-gw-a-id
+
+  NatGatewayBId:
+    Description: NAT Gateway B ID
+    Value: !Ref NatGatewayB
+    Export:
+      Name: lab-nat-gw-b-id
+
+  EIPAAddress:
+    Description: Elastic IP for NAT Gateway A
+    Value: !Ref EIPA
+    Export:
+      Name: lab-eip-a
+
+  EIPBAddress:
+    Description: Elastic IP for NAT Gateway B
+    Value: !Ref EIPB
+    Export:
+      Name: lab-eip-b
+      
+Metadata:
+  AWS::Composer::Groups:
+    Group:
+      Label: Group
+      Members:
+        - PublicSubnetB
+

@@ -349,7 +349,7 @@ Resources:
   WebServerA:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t2.micro
+      InstanceType: t3.micro
       ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
       SubnetId: !Ref PublicSubnetA
       IamInstanceProfile: !Ref SSMInstanceProfile
@@ -397,7 +397,7 @@ Resources:
   WebServerB:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t2.micro
+      InstanceType: t3.micro
       ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
       SubnetId: !Ref PublicSubnetB
       IamInstanceProfile: !Ref SSMInstanceProfile
@@ -445,7 +445,7 @@ Resources:
   AppServerA:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t2.micro
+      InstanceType: t3.micro
       ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
       SubnetId: !Ref PrivateSubnetA
       IamInstanceProfile: !Ref SSMInstanceProfile
@@ -459,7 +459,7 @@ Resources:
   AppServerB:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t2.micro
+      InstanceType: t3.micro
       ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
       SubnetId: !Ref PrivateSubnetB
       IamInstanceProfile: !Ref SSMInstanceProfile

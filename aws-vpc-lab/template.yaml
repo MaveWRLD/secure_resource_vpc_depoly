@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Highly Available Multi-AZ VPC Lab - 
+  Two public subnets with Apache web tier,
+  Two private subnets with app tier,
+  SSM Session Manager access only.
+
+Resources: {}

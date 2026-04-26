@@ -346,90 +346,90 @@ Resources:
   # ---------------------------------------------------------
 
   # --- Web Tier — AZ-A ---
-  # WebServerA:
-  #   Type: AWS::EC2::Instance
-  #   Properties:
-  #     InstanceType: t3.micro
-  #     ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
-  #     SubnetId: !Ref PublicSubnetA
-  #     IamInstanceProfile: !Ref SSMInstanceProfile
-  #     SecurityGroupIds:
-  #       - !Ref WebTierSG
-  #     UserData:
-  #       Fn::Base64: |
-  #         #!/bin/bash
-  #         yum update -y
-  #         yum install -y httpd
-  #         cat > /var/www/html/index.html << 'HTML'
-  #         <!DOCTYPE html>
-  #         <html>
-  #           <head>
-  #             <title>AWS VPC Lab</title>
-  #             <style>
-  #               body { font-family: Arial, sans-serif; text-align: center; margin-top: 80px; background: #f4f4f4; }
-  #               .card { display: inline-block; padding: 40px 60px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  #               h1 { color: #232f3e; }
-  #               p  { color: #555; font-size: 18px; }
-  #               ul { text-align: left; color: #555; font-size: 18px; }
-  #             </style>
-  #           </head>
-  #           <body>
-  #             <div class="card">
-  #               <h1>AWS VPC Lab</h1>
-  #               <p>Full Name: Jacob Quaye</p>
-  #               <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
-  #             </div>
-  #           </body>
-  #         </html>
-  #         HTML
-  #         systemctl enable httpd
-  #         systemctl start httpd
-  #     Tags:
-  #       - Key: Name
-  #         Value: web-server-a
+  WebServerA:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+      SubnetId: !Ref PublicSubnetA
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      SecurityGroupIds:
+        - !Ref WebTierSG
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd
+          cat > /var/www/html/index.html << 'HTML'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>AWS VPC Lab</title>
+              <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin-top: 80px; background: #f4f4f4; }
+                .card { display: inline-block; padding: 40px 60px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+                h1 { color: #232f3e; }
+                p  { color: #555; font-size: 18px; }
+                ul { text-align: left; color: #555; font-size: 18px; }
+              </style>
+            </head>
+            <body>
+              <div class="card">
+                <h1>AWS VPC Lab</h1>
+                <p>Full Name: Jacob Quaye</p>
+                <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
+              </div>
+            </body>
+          </html>
+          HTML
+          systemctl enable httpd
+          systemctl start httpd
+      Tags:
+        - Key: Name
+          Value: web-server-a
 
-  # # --- Web Tier — AZ-B ---
-  # WebServerB:
-  #   Type: AWS::EC2::Instance
-  #   Properties:
-  #     InstanceType: t3.micro
-  #     ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
-  #     SubnetId: !Ref PublicSubnetB
-  #     IamInstanceProfile: !Ref SSMInstanceProfile
-  #     SecurityGroupIds:
-  #       - !Ref WebTierSG
-  #     UserData:
-  #       Fn::Base64: |
-  #         #!/bin/bash
-  #         yum update -y
-  #         yum install -y httpd
-  #         cat > /var/www/html/index.html << 'HTML'
-  #         <!DOCTYPE html>
-  #         <html>
-  #           <head>
-  #             <title>AWS VPC Lab</title>
-  #             <style>
-  #               body { font-family: Arial, sans-serif; text-align: center; margin-top: 80px; background: #f4f4f4; }
-  #               .card { display: inline-block; padding: 40px 60px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  #               h1 { color: #232f3e; }
-  #               p  { color: #555; font-size: 18px; }
-  #               ul { text-align: left; color: #555; font-size: 18px; }
-  #             </style>
-  #           </head>
-  #           <body>
-  #             <div class="card">
-  #               <h1>AWS VPC Lab</h1>
-  #               <p>Full Name: Jacob Quaye</p>
-  #               <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
-  #             </div>
-  #           </body>
-  #         </html>
-  #         HTML
-  #         systemctl enable httpd
-  #         systemctl start httpd
-  #     Tags:
-  #       - Key: Name
-  #         Value: web-server-b
+  # --- Web Tier — AZ-B ---
+  WebServerB:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+      SubnetId: !Ref PublicSubnetB
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      SecurityGroupIds:
+        - !Ref WebTierSG
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd
+          cat > /var/www/html/index.html << 'HTML'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>AWS VPC Lab</title>
+              <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin-top: 80px; background: #f4f4f4; }
+                .card { display: inline-block; padding: 40px 60px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+                h1 { color: #232f3e; }
+                p  { color: #555; font-size: 18px; }
+                ul { text-align: left; color: #555; font-size: 18px; }
+              </style>
+            </head>
+            <body>
+              <div class="card">
+                <h1>AWS VPC Lab</h1>
+                <p>Full Name: Jacob Quaye</p>
+                <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
+              </div>
+            </body>
+          </html>
+          HTML
+          systemctl enable httpd
+          systemctl start httpd
+      Tags:
+        - Key: Name
+          Value: web-server-b
 
   # --- App Tier — AZ-A ---
   AppServerA:
@@ -518,17 +518,17 @@ Outputs:
     Export:
       Name: lab-eip-b
 
-  # WebServerAPublicIP:
-  #   Description: Web Server A public IP
-  #   Value: !GetAtt WebServerA.PublicIp
-  #   Export:
-  #     Name: lab-web-server-a-ip
+  WebServerAPublicIP:
+    Description: Web Server A public IP
+    Value: !GetAtt WebServerA.PublicIp
+    Export:
+      Name: lab-web-server-a-ip
 
-  # WebServerBPublicIP:
-  #   Description: Web Server B public IP
-  #   Value: !GetAtt WebServerB.PublicIp
-  #   Export:
-  #     Name: lab-web-server-b-ip
+  WebServerBPublicIP:
+    Description: Web Server B public IP
+    Value: !GetAtt WebServerB.PublicIp
+    Export:
+      Name: lab-web-server-b-ip
 
   AppServerAPrivateIP:
     Description: App Server A private IP

@@ -360,10 +360,6 @@ Resources:
           #!/bin/bash
           yum update -y
           yum install -y httpd
-          TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
-            -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-          AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
-            http://169.254.169.254/latest/meta-data/placement/availability-zone)
           cat > /var/www/html/index.html << 'HTML'
           <!DOCTYPE html>
           <html>
@@ -374,20 +370,22 @@ Resources:
                 .card { display: inline-block; padding: 40px 60px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
                 h1 { color: #232f3e; }
                 p  { color: #555; font-size: 18px; }
-                .az { color: #ff9900; font-weight: bold; font-size: 20px; }
+                ul { text-align: left; color: #555; font-size: 18px; }
               </style>
             </head>
             <body>
               <div class="card">
                 <h1>AWS VPC Lab</h1>
-                <p>Student Name: Jacob Quaye</p>
+                <p>Full Name: Jacob Quaye</p>
                 <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
-                <p class="az">Availability Zone: __AZ__</p>
+                <p>A private application tier must:</p>
+                <ul>
+                  <li>Consist of two EC2 instances, each in a different AZ</li>
+                </ul>
               </div>
             </body>
           </html>
           HTML
-          sed -i "s/__AZ__/$AZ/" /var/www/html/index.html
           systemctl enable httpd
           systemctl start httpd
       Tags:
@@ -409,10 +407,6 @@ Resources:
           #!/bin/bash
           yum update -y
           yum install -y httpd
-          TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
-            -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-          AZ=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
-            http://169.254.169.254/latest/meta-data/placement/availability-zone)
           cat > /var/www/html/index.html << 'HTML'
           <!DOCTYPE html>
           <html>
@@ -423,7 +417,7 @@ Resources:
                 .card { display: inline-block; padding: 40px 60px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
                 h1 { color: #232f3e; }
                 p  { color: #555; font-size: 18px; }
-                .az { color: #ff9900; font-weight: bold; font-size: 20px; }
+                ul { text-align: left; color: #555; font-size: 18px; }
               </style>
             </head>
             <body>
@@ -431,12 +425,14 @@ Resources:
                 <h1>AWS VPC Lab</h1>
                 <p>Full Name: Jacob Quaye</p>
                 <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
-                <p class="az">Availability Zone: __AZ__</p>
+                <p>A private application tier must:</p>
+                <ul>
+                  <li>Consist of two EC2 instances, each in a different AZ</li>
+                </ul>
               </div>
             </body>
           </html>
           HTML
-          sed -i "s/__AZ__/$AZ/" /var/www/html/index.html
           systemctl enable httpd
           systemctl start httpd
       Tags:

@@ -378,10 +378,6 @@ Resources:
                 <h1>AWS VPC Lab</h1>
                 <p>Full Name: Jacob Quaye</p>
                 <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
-                <p>A private application tier must:</p>
-                <ul>
-                  <li>Consist of two EC2 instances, each in a different AZ</li>
-                </ul>
               </div>
             </body>
           </html>
@@ -425,10 +421,6 @@ Resources:
                 <h1>AWS VPC Lab</h1>
                 <p>Full Name: Jacob Quaye</p>
                 <p>Lab Name: Securely deploying resources in a VPC using cfn LAB</p>
-                <p>A private application tier must:</p>
-                <ul>
-                  <li>Consist of two EC2 instances, each in a different AZ</li>
-                </ul>
               </div>
             </body>
           </html>
